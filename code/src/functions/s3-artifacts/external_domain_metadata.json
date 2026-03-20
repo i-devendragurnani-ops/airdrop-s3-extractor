@@ -1,0 +1,156 @@
+{
+  "schema_version": "v0.2.0",
+  "record_type_categories": {
+    "s3_test_artifacts": {}
+  },
+  "record_types": {
+    "execution_summary": {
+      "name": "Execution Summary",
+      "description": "Top-level test execution report from S3 test artifacts",
+      "category": "s3_test_artifacts",
+      "fields": {
+        "title": {
+          "name": "Title",
+          "is_required": true,
+          "is_indexed": true,
+          "type": "text",
+          "text": { "min_length": 1 }
+        },
+        "execution_id": {
+          "name": "Execution ID",
+          "type": "text"
+        },
+        "execution_name": {
+          "name": "Execution Name",
+          "type": "text"
+        },
+        "system_name": {
+          "name": "System Name",
+          "type": "text"
+        },
+        "system_version": {
+          "name": "System Version",
+          "type": "text"
+        },
+        "system_environment": {
+          "name": "System Environment",
+          "type": "text"
+        },
+        "system_tags": {
+          "name": "System Tags",
+          "type": "text"
+        },
+        "execution_type": {
+          "name": "Execution Type",
+          "type": "text"
+        },
+        "framework_name": {
+          "name": "Framework Name",
+          "type": "text"
+        },
+        "framework_version": {
+          "name": "Framework Version",
+          "type": "text"
+        },
+        "start_time": {
+          "name": "Start Time",
+          "type": "text"
+        },
+        "end_time": {
+          "name": "End Time",
+          "type": "text"
+        },
+        "duration_seconds": {
+          "name": "Duration (seconds)",
+          "type": "text"
+        },
+        "total_tests": {
+          "name": "Total Tests",
+          "type": "text"
+        },
+        "passed_tests": {
+          "name": "Passed Tests",
+          "type": "text"
+        },
+        "failed_tests": {
+          "name": "Failed Tests",
+          "type": "text"
+        },
+        "skipped_tests": {
+          "name": "Skipped Tests",
+          "type": "text"
+        },
+        "pass_percent": {
+          "name": "Pass Percent",
+          "type": "text"
+        },
+        "pipeline_status": {
+          "name": "Pipeline Status",
+          "type": "text"
+        },
+        "source_path": {
+          "name": "Source Path",
+          "type": "text"
+        }
+      }
+    },
+    "test_case": {
+      "name": "Test Case",
+      "description": "Individual test case result extracted from S3 test report",
+      "category": "s3_test_artifacts",
+      "fields": {
+        "title": {
+          "name": "Title",
+          "is_required": true,
+          "is_indexed": true,
+          "type": "text",
+          "text": { "min_length": 1 }
+        },
+        "test_name": {
+          "name": "Test Name",
+          "type": "text"
+        },
+        "full_name": {
+          "name": "Full Name",
+          "type": "text"
+        },
+        "suite_name": {
+          "name": "Suite Name",
+          "type": "text"
+        },
+        "file_path": {
+          "name": "File Path",
+          "type": "text"
+        },
+        "status": {
+          "name": "Status",
+          "type": "text"
+        },
+        "tags": {
+          "name": "Tags",
+          "type": "text"
+        },
+        "start_time": {
+          "name": "Start Time",
+          "type": "text"
+        },
+        "end_time": {
+          "name": "End Time",
+          "type": "text"
+        },
+        "duration_seconds": {
+          "name": "Duration (seconds)",
+          "type": "text"
+        },
+        "failure_message": {
+          "name": "Failure Message",
+          "type": "text"
+        },
+        "execution_id": {
+          "name": "Execution ID",
+          "type": "text"
+        }
+      }
+    }
+  }
+}

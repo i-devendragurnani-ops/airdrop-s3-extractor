@@ -1,0 +1,104 @@
+[
+  {
+    "payload": {
+      "event_type": "EXTRACTION_EXTERNAL_SYNC_UNITS_START",
+      "connection_data": {
+        "key": ""
+      },
+      "event_context": {
+        "mode": "INITIAL",
+        "callback_url": "http://localhost:3000/callback",
+        "worker_data_url": "https://api.devrev.ai/internal/airdrop.external-worker",
+        "external_sync_unit_name": "",
+        "external_sync_unit_id": "",
+        "sync_unit": "",
+        "sync_unit_id": "",
+        "request_id_adaas": "local-test-sync-units",
+        "dev_org": "devendra4",
+        "dev_org_id": "DEV-1eihhHKRjj",
+        "dev_user": "DEVU-1",
+        "dev_uid": "DEVU-1",
+        "run_id": "local-run-1",
+        "snap_in_slug": "s3-test-artifacts-snap-in",
+        "snap_in_version_id": "local-test"
+      }
+    },
+    "context": {
+      "secrets": {
+        "service_account_token": ""
+      }
+    },
+    "execution_metadata": {
+      "request_id": "local-test-sync-units",
+      "devrev_endpoint": "https://api.devrev.ai"
+    }
+  },
+  {
+    "payload": {
+      "event_type": "EXTRACTION_METADATA_START",
+      "connection_data": {
+        "key": ""
+      },
+      "event_context": {
+        "mode": "INITIAL",
+        "callback_url": "http://localhost:3000/callback",
+        "worker_data_url": "https://api.devrev.ai/internal/airdrop.external-worker",
+        "external_sync_unit_name": "",
+        "external_sync_unit_id": "",
+        "sync_unit": "",
+        "sync_unit_id": "",
+        "request_id_adaas": "local-test-metadata",
+        "dev_org": "devendra4",
+        "dev_org_id": "DEV-1eihhHKRjj",
+        "dev_user": "DEVU-1",
+        "dev_uid": "DEVU-1",
+        "run_id": "local-run-1",
+        "snap_in_slug": "s3-test-artifacts-snap-in",
+        "snap_in_version_id": "local-test"
+      }
+    },
+    "context": {
+      "secrets": {
+        "service_account_token": ""
+      }
+    },
+    "execution_metadata": {
+      "request_id": "local-test-metadata",
+      "devrev_endpoint": "https://api.devrev.ai"
+    }
+  },
+  {
+    "payload": {
+      "event_type": "EXTRACTION_DATA_START",
+      "connection_data": {
+        "key": ""
+      },
+      "event_context": {
+        "mode": "INITIAL",
+        "callback_url": "http://localhost:3000/callback",
+        "worker_data_url": "https://api.devrev.ai/internal/airdrop.external-worker",
+        "external_sync_unit_name": "",
+        "external_sync_unit_id": "",
+        "sync_unit": "",
+        "sync_unit_id": "",
+        "request_id_adaas": "local-test-data",
+        "dev_org": "devendra4",
+        "dev_org_id": "DEV-1eihhHKRjj",
+        "dev_user": "DEVU-1",
+        "dev_uid": "DEVU-1",
+        "run_id": "local-run-1",
+        "snap_in_slug": "s3-test-artifacts-snap-in",
+        "snap_in_version_id": "local-test"
+      }
+    },
+    "context": {
+      "secrets": {
+        "service_account_token": ""
+      }
+    },
+    "execution_metadata": {
+      "request_id": "local-test-data",
+      "devrev_endpoint": "https://api.devrev.ai"
+    }
+  }
+]

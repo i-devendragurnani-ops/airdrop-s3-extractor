@@ -1,0 +1,7 @@
+node_modules/
+dist/
+build.tar.gz
+.env
+.npmrc
+.DS_Store
+*.log

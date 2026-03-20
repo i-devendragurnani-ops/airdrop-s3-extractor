@@ -1,0 +1,39 @@
+import { AirdropEvent, EventType, spawn } from '@devrev/ts-adaas';
+
+export interface LoaderState {
+  loaded: boolean;
+}
+
+export const initialState: LoaderState = {
+  loaded: false,
+};
+
+function getWorkerPerLoadingPhase(event: AirdropEvent) {
+  let path;
+  switch (event.payload.event_type) {
+    case EventType.StartLoadingData:
+    case EventType.ContinueLoadingData:
+      path = __dirname + '/workers/load-data';
+      break;
+    case EventType.StartLoadingAttachments:
+    case EventType.ContinueLoadingAttachments:
+      path = __dirname + '/workers/load-attachments';
+      break;
+  }
+  return path;
+}
+
+const run = async (events: AirdropEvent[]) => {
+  for (const event of events) {
+    const file = getWorkerPerLoadingPhase(event);
+    if (file) {
+      await spawn<LoaderState>({
+        event,
+        initialState,
+        workerPath: file,
+      });
+    }
+  }
+};
+
+export default run;

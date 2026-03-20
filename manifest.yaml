@@ -1,0 +1,56 @@
+version: "2"
+
+name: S3 Test Artifacts
+description: Import test execution reports from AWS S3 into DevRev.
+
+service_account:
+  display_name: S3 Test Artifacts Bot
+
+functions:
+  - name: extraction
+    description: Extraction function for S3 test execution reports
+  - name: loading
+    description: Loading function for S3 test data
+
+keyring_types:
+  - id: s3-connection
+    name: S3 Connection
+    description: Connection to AWS S3 for reading test execution artifacts.
+    kind: "Secret"
+    is_subdomain: false
+    external_system_name: "AWS S3"
+    secret_config:
+      secret_transform: ".access_key_id"
+      fields:
+        - id: access_key_id
+          name: AWS Access Key ID
+          description: AWS Access Key ID with read access to the S3 bucket
+        - id: secret_access_key
+          name: AWS Secret Access Key
+          description: AWS Secret Access Key corresponding to the Access Key ID
+        - id: region
+          name: AWS Region
+          description: AWS region where the S3 bucket is located (e.g. us-east-1)
+        - id: bucket_name
+          name: S3 Bucket Name
+          description: Name of the S3 bucket containing test artifacts
+        - id: prefix
+          name: S3 Prefix
+          description: Prefix path within the bucket (e.g. dev/)
+        - id: session_token
+          name: AWS Session Token
+          description: AWS Session Token for temporary/SSO credentials (optional for long-lived IAM keys)
+      token_verification:
+        url: "https://health.aws.amazon.com/health/status"
+        method: GET
+        headers:
+          x-api-key: "[API_KEY]"
+
+imports:
+  - slug: s3-test-artifacts
+    display_name: S3 Test Artifacts
+    description: Import test execution reports from AWS S3
+    extractor_function: extraction
+    loader_function: loading
+    allowed_connection_types:
+      - s3-connection

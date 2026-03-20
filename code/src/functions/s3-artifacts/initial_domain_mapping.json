@@ -1,0 +1,36 @@
+{
+  "additional_mappings": {
+    "record_type_category_mappings": {
+      "s3_test_artifacts": {
+        "default_mapping": {
+          "object_category": "fresh_custom",
+          "object_type": ""
+        },
+        "mapping_as_custom_object": {
+          "forward": true,
+          "reverse": false,
+          "shard": {
+            "mode": "create_shard",
+            "devrev_leaf_type": {
+              "object_category": "fresh_custom",
+              "object_type": ""
+            },
+            "stock_field_mappings": {
+              "title": {
+                "forward": true,
+                "reverse": false,
+                "primary_external_field": "title",
+                "transformation_method_for_set": {
+                  "transformation_method": "use_directly"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "record_type_mappings": {},
+    "format_version": "v0.2.0",
+    "devrev_metadata_version": 13
+  }
+}
