@@ -40,11 +40,15 @@ keyring_types:
         - id: session_token
           name: AWS Session Token
           description: AWS Session Token for temporary/SSO credentials (optional for long-lived IAM keys)
+          is_optional: true
       token_verification:
-        url: "https://health.aws.amazon.com/health/status"
+        url: "https://ip-ranges.amazonaws.com/ip-ranges.json"
         method: GET
-        headers:
-          x-api-key: "[API_KEY]"
+    organization_data:
+      type: "config"
+      url: "https://ip-ranges.amazonaws.com/ip-ranges.json"
+      method: "GET"
+      response_jq: '{"id": "s3-artifacts-org", "name": "AWS S3 Test Artifacts"}'
 
 imports:
   - slug: s3-test-artifacts
