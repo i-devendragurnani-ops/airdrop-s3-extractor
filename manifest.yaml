@@ -20,7 +20,7 @@ keyring_types:
     is_subdomain: false
     external_system_name: "AWS S3"
     secret_config:
-      secret_transform: ".access_key_id"
+      secret_transform: "tojson"
       fields:
         - id: access_key_id
           name: AWS Access Key ID

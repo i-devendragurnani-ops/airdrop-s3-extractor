@@ -25,16 +25,40 @@ export class S3ArtifactsClient {
 
   constructor(event: AirdropEvent) {
     const connData = event.payload.connection_data as Record<string, any>;
-    const orgData = connData.org_data || {};
     const key = connData.key || '';
 
-    const accessKeyId = orgData.access_key_id || connData.access_key_id || key;
-    const secretAccessKey = orgData.secret_access_key || connData.secret_access_key || '';
-    const region = orgData.region || connData.region || 'us-east-1';
-    const sessionToken = orgData.session_token || connData.session_token || '';
+    console.log('[s3-client] connection_data keys:', Object.keys(connData));
+    console.log('[s3-client] key_type:', connData.key_type);
+    console.log('[s3-client] key length:', key.length);
 
-    this.bucketName = orgData.bucket_name || connData.bucket_name || 'devrev-test-execution-artifacts';
-    this.prefix = orgData.prefix || connData.prefix || 'dev/';
+    // secret_transform: "tojson" packs all fields into key as a JSON string
+    let fields: Record<string, string> = {};
+    try {
+      const parsed = JSON.parse(key);
+      if (typeof parsed === 'object' && parsed !== null) {
+        fields = parsed;
+        console.log('[s3-client] Parsed key as JSON, fields:', Object.keys(fields));
+      }
+    } catch {
+      console.log('[s3-client] key is not JSON, treating as raw access_key_id');
+    }
+
+    const accessKeyId = fields.access_key_id || connData.access_key_id || key;
+    const secretAccessKey = fields.secret_access_key || connData.secret_access_key || '';
+    const region = fields.region || connData.region || 'us-east-1';
+    const sessionToken = fields.session_token || connData.session_token || '';
+
+    this.bucketName = fields.bucket_name || connData.bucket_name || 'devrev-test-execution-artifacts';
+    this.prefix = fields.prefix || connData.prefix || 'dev/';
+
+    console.log('[s3-client] resolved config:', {
+      accessKeyId: accessKeyId ? `${accessKeyId.substring(0, 8)}...` : 'MISSING',
+      secretAccessKey: secretAccessKey ? '***present***' : 'MISSING',
+      region,
+      bucketName: this.bucketName,
+      prefix: this.prefix,
+      sessionToken: sessionToken ? '***present***' : 'not set',
+    });
 
     if (!this.prefix.endsWith('/')) {
       this.prefix += '/';
@@ -42,7 +66,10 @@ export class S3ArtifactsClient {
 
     if (!accessKeyId || !secretAccessKey) {
       throw new Error(
-        'AWS credentials are missing. Provide access_key_id and secret_access_key via the connection.'
+        `AWS credentials are missing. accessKeyId=${accessKeyId ? 'present' : 'MISSING'}, ` +
+        `secretAccessKey=${secretAccessKey ? 'present' : 'MISSING'}. ` +
+        `connection_data keys: [${Object.keys(connData).join(', ')}]. ` +
+        `parsed fields: [${Object.keys(fields).join(', ')}].`
       );
     }
 
