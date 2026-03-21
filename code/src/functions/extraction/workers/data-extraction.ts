@@ -41,32 +41,42 @@ processTask<ExtractorState>({
       adapter.event.payload.event_context.sync_unit_id ||
       '';
 
-    const s3Prefix = client.projectPrefix(syncUnitId);
-    console.log(`[data] Fetching report.json for sync unit: ${syncUnitId} (s3: ${s3Prefix})`);
+    console.log(`[data] Listing build runs for project: ${syncUnitId}`);
+    const buildRuns = await client.listBuildRuns(syncUnitId);
+    console.log(`[data] Found ${buildRuns.length} build runs for ${syncUnitId}`);
 
-    const report = await client.getReportJson(s3Prefix);
-
-    if (!report) {
-      console.log('[data] No report.json found for this sync unit. Completing.');
+    if (buildRuns.length === 0) {
+      console.log('[data] No build runs found. Completing.');
       adapter.state.completed = true;
       await adapter.emit(ExtractorEventType.DataExtractionDone);
       return;
     }
 
-    const summaryItem = normalizeExecutionSummary(report);
-    await adapter.getRepo('execution_summary')?.push([summaryItem]);
-    console.log(`[data] Pushed execution_summary: ${summaryItem.id}`);
+    let summaryCount = 0;
+    let testCaseCount = 0;
 
-    const flatCases = flattenTestCases(report);
-    console.log(`[data] Found ${flatCases.length} test cases to normalize`);
+    for (const run of buildRuns) {
+      const report = await client.getReportJson(run.prefix);
+      if (!report) {
+        console.log(`[data] No report.json in ${run.name}, skipping`);
+        continue;
+      }
 
-    if (flatCases.length > 0) {
-      const testCaseItems = flatCases.map(({ testCase, context }) =>
-        normalizeTestCase(testCase, context, report)
-      );
-      await adapter.getRepo('test_case')?.push(testCaseItems);
-      console.log(`[data] Pushed ${testCaseItems.length} test_case records`);
+      const summaryItem = normalizeExecutionSummary(report);
+      await adapter.getRepo('execution_summary')?.push([summaryItem]);
+      summaryCount++;
+
+      const flatCases = flattenTestCases(report);
+      if (flatCases.length > 0) {
+        const testCaseItems = flatCases.map(({ testCase, context }) =>
+          normalizeTestCase(testCase, context, report)
+        );
+        await adapter.getRepo('test_case')?.push(testCaseItems);
+        testCaseCount += testCaseItems.length;
+      }
     }
+
+    console.log(`[data] Done: ${summaryCount} summaries, ${testCaseCount} test cases from ${buildRuns.length} runs`);
 
     adapter.state.completed = true;
     await adapter.emit(ExtractorEventType.DataExtractionDone);

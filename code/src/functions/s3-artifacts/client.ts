@@ -90,6 +90,35 @@ export class S3ArtifactsClient {
     return `${this.prefix}${projectName}/`;
   }
 
+  async listBuildRuns(projectName: string): Promise<{ prefix: string; name: string }[]> {
+    const projectPfx = this.projectPrefix(projectName);
+    const runs: { prefix: string; name: string }[] = [];
+    let continuationToken: string | undefined;
+
+    do {
+      const command = new ListObjectsV2Command({
+        Bucket: this.bucketName,
+        Prefix: projectPfx,
+        Delimiter: '/',
+        ContinuationToken: continuationToken,
+      });
+
+      const response = await this.s3.send(command);
+      for (const p of response.CommonPrefixes || []) {
+        if (p.Prefix) {
+          const name = p.Prefix.replace(projectPfx, '').replace(/\/$/, '');
+          if (name) {
+            runs.push({ prefix: p.Prefix, name });
+          }
+        }
+      }
+
+      continuationToken = response.IsTruncated ? response.NextContinuationToken : undefined;
+    } while (continuationToken);
+
+    return runs;
+  }
+
   async getReportJson(projectPrefix: string): Promise<any | null> {
     const key = projectPrefix.endsWith('/')
       ? `${projectPrefix}report.json`
