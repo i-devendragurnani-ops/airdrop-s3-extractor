@@ -28,15 +28,6 @@ keyring_types:
         - id: secret_access_key
           name: AWS Secret Access Key
           description: AWS Secret Access Key corresponding to the Access Key ID
-        - id: region
-          name: AWS Region
-          description: AWS region where the S3 bucket is located (e.g. us-east-1)
-        - id: bucket_name
-          name: S3 Bucket Name
-          description: Name of the S3 bucket containing test artifacts
-        - id: prefix
-          name: S3 Prefix
-          description: Prefix path within the bucket (e.g. dev/)
         - id: session_token
           name: AWS Session Token
           description: AWS Session Token for temporary/SSO credentials (optional for long-lived IAM keys)

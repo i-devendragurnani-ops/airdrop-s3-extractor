@@ -5,13 +5,9 @@ import {
   GetObjectCommand,
 } from '@aws-sdk/client-s3';
 
-export interface S3Config {
-  accessKeyId: string;
-  secretAccessKey: string;
-  region: string;
-  bucketName: string;
-  prefix: string;
-}
+const S3_REGION = 'us-east-1';
+const S3_BUCKET = 'devrev-test-execution-artifacts';
+const S3_PREFIX = 'dev/us-east-1/';
 
 export interface ProjectInfo {
   prefix: string;
@@ -20,61 +16,38 @@ export interface ProjectInfo {
 
 export class S3ArtifactsClient {
   private s3: S3Client;
-  private bucketName: string;
-  private prefix: string;
+  private bucketName = S3_BUCKET;
+  private prefix = S3_PREFIX;
 
   constructor(event: AirdropEvent) {
     const connData = event.payload.connection_data as Record<string, any>;
     const key = connData.key || '';
 
-    console.log('[s3-client] connection_data keys:', Object.keys(connData));
-    console.log('[s3-client] key_type:', connData.key_type);
-    console.log('[s3-client] key length:', key.length);
-
-    // secret_transform: "tojson" packs all fields into key as a JSON string
     let fields: Record<string, string> = {};
     try {
       const parsed = JSON.parse(key);
       if (typeof parsed === 'object' && parsed !== null) {
         fields = parsed;
-        console.log('[s3-client] Parsed key as JSON, fields:', Object.keys(fields));
       }
     } catch {
-      console.log('[s3-client] key is not JSON, treating as raw access_key_id');
+      // key is not JSON — treat as raw access_key_id
     }
 
     const accessKeyId = fields.access_key_id || connData.access_key_id || key;
     const secretAccessKey = fields.secret_access_key || connData.secret_access_key || '';
-    const region = fields.region || connData.region || 'us-east-1';
     const sessionToken = fields.session_token || connData.session_token || '';
-
-    this.bucketName = fields.bucket_name || connData.bucket_name || 'devrev-test-execution-artifacts';
-    this.prefix = fields.prefix || connData.prefix || 'dev/';
-
-    console.log('[s3-client] resolved config:', {
-      accessKeyId: accessKeyId ? `${accessKeyId.substring(0, 8)}...` : 'MISSING',
-      secretAccessKey: secretAccessKey ? '***present***' : 'MISSING',
-      region,
-      bucketName: this.bucketName,
-      prefix: this.prefix,
-      sessionToken: sessionToken ? '***present***' : 'not set',
-    });
-
-    if (!this.prefix.endsWith('/')) {
-      this.prefix += '/';
-    }
 
     if (!accessKeyId || !secretAccessKey) {
       throw new Error(
-        `AWS credentials are missing. accessKeyId=${accessKeyId ? 'present' : 'MISSING'}, ` +
-        `secretAccessKey=${secretAccessKey ? 'present' : 'MISSING'}. ` +
-        `connection_data keys: [${Object.keys(connData).join(', ')}]. ` +
-        `parsed fields: [${Object.keys(fields).join(', ')}].`
+        `AWS credentials missing. connection_data keys: [${Object.keys(connData).join(', ')}], ` +
+        `parsed fields: [${Object.keys(fields).join(', ')}]`
       );
     }
 
+    console.log('[s3-client] credentials OK, bucket:', this.bucketName, 'prefix:', this.prefix);
+
     this.s3 = new S3Client({
-      region,
+      region: S3_REGION,
       credentials: {
         accessKeyId,
         secretAccessKey,
@@ -111,6 +84,10 @@ export class S3ArtifactsClient {
     } while (continuationToken);
 
     return projects;
+  }
+
+  projectPrefix(projectName: string): string {
+    return `${this.prefix}${projectName}/`;
   }
 
   async getReportJson(projectPrefix: string): Promise<any | null> {

@@ -14,7 +14,7 @@ processTask({
     console.log(`[sync-units] Found ${projects.length} project directories in S3`);
 
     const externalSyncUnits: ExternalSyncUnit[] = projects.map((project) => ({
-      id: project.prefix,
+      id: project.name,
       name: project.name,
       description: `S3 test artifacts project: ${project.name}`,
       item_type: 'Test Reports',

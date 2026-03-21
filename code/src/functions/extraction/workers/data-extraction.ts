@@ -41,9 +41,10 @@ processTask<ExtractorState>({
       adapter.event.payload.event_context.sync_unit_id ||
       '';
 
-    console.log(`[data] Fetching report.json for sync unit: ${syncUnitId}`);
+    const s3Prefix = client.projectPrefix(syncUnitId);
+    console.log(`[data] Fetching report.json for sync unit: ${syncUnitId} (s3: ${s3Prefix})`);
 
-    const report = await client.getReportJson(syncUnitId);
+    const report = await client.getReportJson(s3Prefix);
 
     if (!report) {
       console.log('[data] No report.json found for this sync unit. Completing.');
