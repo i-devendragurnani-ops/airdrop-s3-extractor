@@ -1,28 +1,39 @@
 import { ExternalSyncUnit, ExtractorEventType, processTask } from '@devrev/ts-adaas';
 
-import { S3ArtifactsClient } from '../../s3-artifacts/client';
+const ALL_PROJECTS_SYNC_UNIT_ID = 'all';
 
 processTask({
   task: async ({ adapter }) => {
-    const client = new S3ArtifactsClient(adapter.event);
+    try {
+      console.log('[sync-units] Starting external sync unit extraction');
 
-    const projects = await client.listProjects();
-    if (!projects || projects.length === 0) {
-      throw new Error('No project directories found under the configured S3 prefix');
+      const externalSyncUnits: ExternalSyncUnit[] = [
+        {
+          id: ALL_PROJECTS_SYNC_UNIT_ID,
+          name: 'All Projects',
+          description:
+            'Import test execution reports from every S3 project directory under the configured prefix into one table.',
+          item_type: 'execution_summary',
+        },
+      ];
+
+      console.log(
+        `[sync-units] Emitting ${externalSyncUnits.length} sync unit(s): ${JSON.stringify(externalSyncUnits)}`
+      );
+
+      await adapter.emit(ExtractorEventType.ExternalSyncUnitExtractionDone, {
+        external_sync_units: externalSyncUnits,
+      });
+
+      console.log('[sync-units] Successfully emitted external sync units');
+    } catch (error: any) {
+      console.error('[sync-units] Error during sync unit extraction:', error?.message || error);
+      await adapter.emit(ExtractorEventType.ExternalSyncUnitExtractionError, {
+        error: {
+          message: `Failed to extract external sync units: ${error?.message || String(error)}`,
+        },
+      });
     }
-
-    console.log(`[sync-units] Found ${projects.length} project directories in S3`);
-
-    const externalSyncUnits: ExternalSyncUnit[] = projects.map((project) => ({
-      id: project.name,
-      name: project.name,
-      description: `S3 test artifacts project: ${project.name}`,
-      item_type: 'Test Reports',
-    }));
-
-    await adapter.emit(ExtractorEventType.ExternalSyncUnitExtractionDone, {
-      external_sync_units: externalSyncUnits,
-    });
   },
   onTimeout: async ({ adapter }) => {
     await adapter.emit(ExtractorEventType.ExternalSyncUnitExtractionError, {

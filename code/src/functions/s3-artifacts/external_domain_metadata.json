@@ -5,12 +5,13 @@
   },
   "record_types": {
     "execution_summary": {
-      "name": "Execution Summary",
+      "name": "Summary",
       "description": "Top-level test execution report from S3 test artifacts",
       "category": "s3_test_artifacts",
       "fields": {
         "title": {
           "name": "Title",
+          "description": "Human-readable summary line: system under test, execution name, total case count, and pass rate (derived from normalized report.json).",
           "is_required": true,
           "is_indexed": true,
           "type": "text",
@@ -18,136 +19,112 @@
         },
         "execution_id": {
           "name": "Execution ID",
+          "description": "Unique id for this test execution from the ingested report (execution_id). Primary external key for this summary row.",
           "type": "text"
         },
         "execution_name": {
           "name": "Execution Name",
+          "description": "Display name of the execution from report execution_name (e.g. pipeline run or job label supplied by the publisher).",
           "type": "text"
         },
         "system_name": {
           "name": "System Name",
+          "description": "Name of the system under test from report system_under_test.name.",
           "type": "text"
         },
         "system_version": {
           "name": "System Version",
+          "description": "Version label for the system under test from report system_under_test.version (publisher-defined; may be semver, build id, or branch).",
           "type": "text"
         },
         "system_environment": {
           "name": "System Environment",
+          "description": "Logical environment for the run from report system_under_test.environment (e.g. dev, staging, prod).",
           "type": "text"
         },
         "system_tags": {
           "name": "System Tags",
+          "description": "JSON array string of tags from system_under_test.tags (e.g. branch, build metadata) for filtering and grouping.",
+          "type": "text"
+        },
+        "aws_region": {
+          "name": "AWS Region",
+          "description": "AWS region for this execution record (default us-east-1 when the report does not specify a region; aligns with org-level reporting).",
           "type": "text"
         },
         "execution_type": {
           "name": "Execution Type",
+          "description": "Kind of execution from execution_metrics.type (e.g. ci, scheduled); semantics depend on the report publisher.",
+          "type": "text"
+        },
+        "cases_type": {
+          "name": "Cases Type",
+          "description": "Category or grouping of cases in this execution (e.g. unit, e2e, integration). Reserved for future inference from report paths or metadata; empty when not set.",
           "type": "text"
         },
         "framework_name": {
           "name": "Framework Name",
+          "description": "Test framework name from execution_metrics.framework.name when present in the report.",
           "type": "text"
         },
         "framework_version": {
           "name": "Framework Version",
+          "description": "Framework or runtime hint from execution_metrics.framework.version when present (publisher-defined).",
           "type": "text"
         },
         "start_time": {
           "name": "Start Time",
+          "description": "Execution start timestamp (ISO 8601) from execution_metrics.start.",
           "type": "text"
         },
         "end_time": {
           "name": "End Time",
+          "description": "Execution end timestamp (ISO 8601) from execution_metrics.end.",
           "type": "text"
         },
         "duration_seconds": {
           "name": "Duration (seconds)",
+          "description": "Total execution duration in seconds from execution_metrics.duration.",
           "type": "text"
         },
-        "total_tests": {
-          "name": "Total Tests",
+        "total_cases": {
+          "name": "Total Cases",
+          "description": "Total number of test cases in summary.total (passed, failed, and skipped combined).",
           "type": "text"
         },
-        "passed_tests": {
-          "name": "Passed Tests",
+        "passed_cases": {
+          "name": "Passed Cases",
+          "description": "Number of test cases that completed successfully from summary.passed.",
           "type": "text"
         },
-        "failed_tests": {
-          "name": "Failed Tests",
+        "failed_cases": {
+          "name": "Failed Cases",
+          "description": "Number of test cases that failed from summary.failed.",
           "type": "text"
         },
-        "skipped_tests": {
-          "name": "Skipped Tests",
-          "type": "text"
-        },
-        "pass_percent": {
-          "name": "Pass Percent",
-          "type": "text"
-        },
-        "pipeline_status": {
-          "name": "Pipeline Status",
+        "skipped_cases": {
+          "name": "Skipped Cases",
+          "description": "Number of test cases skipped from summary.skipped.",
           "type": "text"
         },
         "source_path": {
           "name": "Source Path",
-          "type": "text"
-        }
-      }
-    },
-    "test_case": {
-      "name": "Test Case",
-      "description": "Individual test case result extracted from S3 test report",
-      "category": "s3_test_artifacts",
-      "fields": {
-        "title": {
-          "name": "Title",
-          "is_required": true,
-          "is_indexed": true,
-          "type": "text",
-          "text": { "min_length": 1 }
-        },
-        "test_name": {
-          "name": "Test Name",
+          "description": "Stable identifier for this report in the snap-in: set to execution_id (S3 object path may be tracked separately in extraction metadata).",
           "type": "text"
         },
-        "full_name": {
-          "name": "Full Name",
+        "pass_percent": {
+          "name": "Pass Percent",
+          "description": "Percentage of cases that passed: passed divided by total (one decimal; 0.0 when total is zero).",
           "type": "text"
         },
-        "suite_name": {
-          "name": "Suite Name",
+        "execution_percent": {
+          "name": "Execution Percent",
+          "description": "Percentage of cases that were executed (not skipped): (total minus skipped) divided by total. Measures how much of the suite actually ran.",
           "type": "text"
         },
-        "file_path": {
-          "name": "File Path",
-          "type": "text"
-        },
-        "status": {
-          "name": "Status",
-          "type": "text"
-        },
-        "tags": {
-          "name": "Tags",
-          "type": "text"
-        },
-        "start_time": {
-          "name": "Start Time",
-          "type": "text"
-        },
-        "end_time": {
-          "name": "End Time",
-          "type": "text"
-        },
-        "duration_seconds": {
-          "name": "Duration (seconds)",
-          "type": "text"
-        },
-        "failure_message": {
-          "name": "Failure Message",
-          "type": "text"
-        },
-        "execution_id": {
-          "name": "Execution ID",
+        "pipeline_status": {
+          "name": "Pipeline Status",
+          "description": "Aggregate pass/fail for this execution: failed when summary.failed is greater than zero, otherwise passed.",
           "type": "text"
         }
       }
