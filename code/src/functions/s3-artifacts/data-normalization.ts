@@ -46,49 +46,67 @@ function sourceKeyFromContext(path: PathContext): string {
   return `${path.environment}/${path.region}/${path.project}/${path.buildRunName}/report.json`;
 }
 
+/** Valid RFC3339 timestamp for AirSync, or omit field when missing/invalid. */
+function toRfc3339OrUndefined(iso: string | undefined): string | undefined {
+  if (iso == null || typeof iso !== 'string') return undefined;
+  const t = Date.parse(iso.trim());
+  if (Number.isNaN(t)) return undefined;
+  return new Date(t).toISOString();
+}
+
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
+}
+
 export function normalizeExecutionSummary(report: ReportJson, pathContext: PathContext): NormalizedItem {
   const sut = report.system_under_test;
   const metrics = report.execution_metrics;
   const summary = report.summary || { total: 0, passed: 0, failed: 0, skipped: 0 };
 
   const passPercent =
-    summary.total > 0 ? ((summary.passed / summary.total) * 100).toFixed(1) : '0.0';
+    summary.total > 0 ? round1((summary.passed / summary.total) * 100) : 0;
 
   const executionPercent =
     summary.total > 0
-      ? (((summary.total - summary.skipped) / summary.total) * 100).toFixed(1)
-      : '0.0';
+      ? round1(((summary.total - summary.skipped) / summary.total) * 100)
+      : 0;
 
-  const pipelineStatus = summary.failed > 0 ? 'failed' : 'passed';
+  const pipelineStatus: 'passed' | 'failed' = summary.failed > 0 ? 'failed' : 'passed';
+
+  const startTime = toRfc3339OrUndefined(metrics?.start);
+  const endTime = toRfc3339OrUndefined(metrics?.end);
+
+  const data: Record<string, string | number> = {
+    title: `${sut?.name || 'unknown'} / ${report.execution_name} [${pathContext.project}] (${summary.total} cases, ${passPercent}% pass)`,
+    execution_id: report.execution_id,
+    execution_name: report.execution_name,
+    system_name: sut?.name || '',
+    system_version: sut?.version || '',
+    system_environment: pathContext.environment,
+    system_tags: JSON.stringify(sut?.tags || []),
+    aws_region: pathContext.region,
+    execution_type: metrics?.type || '',
+    cases_type: '',
+    framework_name: metrics?.framework?.name || '',
+    framework_version: metrics?.framework?.version || '',
+    duration_seconds: metrics?.duration ?? 0,
+    total_cases: Math.trunc(summary.total),
+    passed_cases: Math.trunc(summary.passed),
+    failed_cases: Math.trunc(summary.failed),
+    skipped_cases: Math.trunc(summary.skipped),
+    source_path: sourceKeyFromContext(pathContext),
+    pass_percent: passPercent,
+    execution_percent: executionPercent,
+    pipeline_status: pipelineStatus,
+  };
+
+  if (startTime !== undefined) data.start_time = startTime;
+  if (endTime !== undefined) data.end_time = endTime;
 
   return {
     id: compositeExternalId(report, pathContext),
-    created_date: metrics?.start || new Date().toISOString(),
-    modified_date: metrics?.end || metrics?.start || new Date().toISOString(),
-    data: {
-      title: `${sut?.name || 'unknown'} / ${report.execution_name} [${pathContext.project}] (${summary.total} cases, ${passPercent}% pass)`,
-      execution_id: report.execution_id,
-      execution_name: report.execution_name,
-      system_name: sut?.name || '',
-      system_version: sut?.version || '',
-      system_environment: pathContext.environment,
-      system_tags: JSON.stringify(sut?.tags || []),
-      aws_region: pathContext.region,
-      execution_type: metrics?.type || '',
-      cases_type: '',
-      framework_name: metrics?.framework?.name || '',
-      framework_version: metrics?.framework?.version || '',
-      start_time: metrics?.start || '',
-      end_time: metrics?.end || '',
-      duration_seconds: String(metrics?.duration || 0),
-      total_cases: String(summary.total),
-      passed_cases: String(summary.passed),
-      failed_cases: String(summary.failed),
-      skipped_cases: String(summary.skipped),
-      source_path: sourceKeyFromContext(pathContext),
-      pass_percent: passPercent,
-      execution_percent: executionPercent,
-      pipeline_status: pipelineStatus,
-    },
+    created_date: startTime || new Date().toISOString(),
+    modified_date: endTime || startTime || new Date().toISOString(),
+    data,
   };
 }

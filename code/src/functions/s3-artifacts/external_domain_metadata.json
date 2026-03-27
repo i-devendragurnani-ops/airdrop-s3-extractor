@@ -74,38 +74,38 @@
         },
         "start_time": {
           "name": "Start Time",
-          "description": "Execution start timestamp (ISO 8601) from execution_metrics.start.",
-          "type": "text"
+          "description": "Execution start as RFC3339 / full-precision datetime from execution_metrics.start when present.",
+          "type": "timestamp"
         },
         "end_time": {
           "name": "End Time",
-          "description": "Execution end timestamp (ISO 8601) from execution_metrics.end.",
-          "type": "text"
+          "description": "Execution end as RFC3339 / full-precision datetime from execution_metrics.end when present.",
+          "type": "timestamp"
         },
         "duration_seconds": {
           "name": "Duration (seconds)",
           "description": "Total execution duration in seconds from execution_metrics.duration.",
-          "type": "text"
+          "type": "float"
         },
         "total_cases": {
           "name": "Total Cases",
           "description": "Total number of test cases in summary.total (passed, failed, and skipped combined).",
-          "type": "text"
+          "type": "int"
         },
         "passed_cases": {
           "name": "Passed Cases",
           "description": "Number of test cases that completed successfully from summary.passed.",
-          "type": "text"
+          "type": "int"
         },
         "failed_cases": {
           "name": "Failed Cases",
           "description": "Number of test cases that failed from summary.failed.",
-          "type": "text"
+          "type": "int"
         },
         "skipped_cases": {
           "name": "Skipped Cases",
           "description": "Number of test cases skipped from summary.skipped.",
-          "type": "text"
+          "type": "int"
         },
         "source_path": {
           "name": "Source Path",
@@ -114,18 +114,24 @@
         },
         "pass_percent": {
           "name": "Pass Percent",
-          "description": "Percentage of cases that passed: passed divided by total (one decimal; 0.0 when total is zero).",
-          "type": "text"
+          "description": "Percentage of cases that passed: passed divided by total (0.0 when total is zero).",
+          "type": "float"
         },
         "execution_percent": {
           "name": "Execution Percent",
-          "description": "Percentage of cases that were executed (not skipped): (total minus skipped) divided by total. Measures how much of the suite actually ran.",
-          "type": "text"
+          "description": "Percentage of cases that were executed (not skipped): (total minus skipped) divided by total.",
+          "type": "float"
         },
         "pipeline_status": {
           "name": "Pipeline Status",
           "description": "Aggregate pass/fail for this execution: failed when summary.failed is greater than zero, otherwise passed.",
-          "type": "text"
+          "type": "enum",
+          "enum": {
+            "values": [
+              { "key": "passed", "name": "Passed" },
+              { "key": "failed", "name": "Failed" }
+            ]
+          }
         }
       }
     }
