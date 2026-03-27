@@ -2,6 +2,7 @@ import {
   EventType,
   ExtractorEventType,
   processTask,
+  SyncMode,
 } from '@devrev/ts-adaas';
 
 import { S3ArtifactsClient } from '../../s3-artifacts/client';
@@ -9,6 +10,8 @@ import { normalizeExecutionSummary } from '../../s3-artifacts/data-normalization
 import { ExtractorState, initialState } from '../index';
 
 const repos = [{ itemType: 'execution_summary' }];
+
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 processTask<ExtractorState>({
   task: async ({ adapter }) => {
@@ -29,23 +32,25 @@ processTask<ExtractorState>({
         return;
       }
 
+      const eventContext = (adapter.event.payload.event_context || {}) as Record<string, any>;
+      const mode = eventContext.mode as string | undefined;
+      const isIncremental = mode === SyncMode.INCREMENTAL;
+      const minRunDateFromFolder = isIncremental ? undefined : new Date(Date.now() - THIRTY_DAYS_MS);
+
+      if (minRunDateFromFolder) {
+        console.log(
+          `[data] Initial sync: only including build runs with folder timestamp >= ${minRunDateFromFolder.toISOString()}`
+        );
+      } else {
+        console.log('[data] Incremental (or unspecified mode): no folder-date cutoff');
+      }
+
       console.log('[data] Creating S3 client...');
       const client = new S3ArtifactsClient(adapter.event);
 
-      console.log('[data] Listing all S3 projects...');
-      const projects = await client.listProjects();
-      console.log(`[data] Found ${projects.length} project(s): ${projects.map((p) => p.name).join(', ')}`);
-
-      const buildRuns: { prefix: string; name: string }[] = [];
-      for (const project of projects) {
-        const runs = await client.listBuildRuns(project.name);
-        console.log(`[data] Project "${project.name}": ${runs.length} build run(s)`);
-        buildRuns.push(...runs);
-      }
-
-      console.log(
-        `[data] Total: ${buildRuns.length} build runs across ${projects.length} project(s)`
-      );
+      console.log('[data] Listing all build runs (env / region / project)...');
+      const buildRuns = await client.listAllBuildRuns({ minRunDateFromFolder });
+      console.log(`[data] Found ${buildRuns.length} build run(s) after date filter`);
 
       if (buildRuns.length === 0) {
         console.log('[data] No build runs found. Completing.');
@@ -64,7 +69,13 @@ processTask<ExtractorState>({
             continue;
           }
 
-          const summaryItem = normalizeExecutionSummary(report);
+          const pathContext = {
+            environment: run.environment,
+            region: run.region,
+            project: run.project,
+            buildRunName: run.name,
+          };
+          const summaryItem = normalizeExecutionSummary(report, pathContext);
           await adapter.getRepo('execution_summary')?.push([summaryItem]);
           summaryCount++;
         } catch (runError: any) {

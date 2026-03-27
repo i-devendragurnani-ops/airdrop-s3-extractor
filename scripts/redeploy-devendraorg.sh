@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Redeploy S3 Test Artifacts snap-in to devendra4: build, optionally delete old snap-in, create new version.
+# Redeploy S3 Test Artifacts snap-in to devendraorg: build, optionally delete old snap-in, create new version.
 # Usage:
 #   export SNAP_IN_PACKAGE_ID='don:integration:...:snap_in_package/...'
-#   ./scripts/redeploy-devendra4.sh [OLD_SNAP_IN_ID]
+#   ./scripts/redeploy-devendraorg.sh [OLD_SNAP_IN_ID]
 #
 # Requires: devrev CLI, authenticated profile (devrev profiles authenticate ... -e prod)
 
 set -euo pipefail
 
-ORG=devendra4
+ORG=devendraorg
 ENV=prod
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
